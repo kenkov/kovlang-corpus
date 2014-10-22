@@ -16,9 +16,22 @@
     keyword/
         keyword.lst            ;こふ語のうち比較的変わった使い方をする単語ﾘｽﾖｯ
 
-部分的ｱﾉﾃｯｼｮﾝｺｰﾊﾟｽ `annot.txt` は `KyTea <http://www.phontron.com/kytea/index-ja.html>`_ 用のものですっこの部分的ｱﾉﾃｯｼｮﾝｺｰﾊﾟｽを利用して訓練した KyTea のモデルを使って
+部分的ｱﾉﾃｯｼｮﾝｺｰﾊﾟｽ `annot.txt` は `KyTea <http://www.phontron.com/kytea/index-ja.html>`_ 用のものですっ
+この部分的ｱﾉﾃｯｼｮﾝｺｰﾊﾟｽを利用して学習したこふ語の KyTea モデルを使って
 生ｺｯﾊﾟｽ `raw/raw.txt` を解析した結果が `parsed/kovlang.parsed.txt` です。
 
-こふ語と思われる単語には、通常の品詞タグではなく **こふ語** という品詞タグをつけていますっ
+実際にこふ語用の KyTea モデルを学習するには次のようにすればいいです。
+ここでは学習に `KyTea の素性ファイル <http://www.phontron.com/kytea/train-ja.html#feature>`_ を用いました。
 
+.. code-block:: bash
+
+    train-kytea -dictn 4 -charw 3 -charn 3 -typew 3 -typew 3 -global 1 \
+        -feat kytea-0.4.2.feat \
+        -part annot/preannot.txt \
+        -part annot/annot.txt \
+        -model kovlang.model
+
+
+こふ語と思われる単語には、通常の品詞タグではなく **こふ語** という品詞タグをつけていますっ
 名前と思われる単語には、 **名前** タグをつけています。
+
