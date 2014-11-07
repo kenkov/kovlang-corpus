@@ -21,9 +21,7 @@ def extract(
     for endpos in range(length):
         cond = ch.is_halfwidthkatakana(line[endpos])
         if kflag:
-            if cond:
-                kflag = True
-            else:
+            if not cond:
                 ks.add(line[curpos:endpos])
                 kflag = False
                 curpos = endpos + 1
@@ -32,7 +30,6 @@ def extract(
                 kflag = True
             else:
                 curpos += 1
-        endpos += 1
 
     return ks
 
