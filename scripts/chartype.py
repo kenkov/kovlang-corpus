@@ -26,6 +26,16 @@ class CharTypeException(TypeError):
 as a parameter: {}".format(self.sent)
 
 
+class VoicedTypeException(TypeError):
+
+    def __init__(self, sent):
+        self.sent = sent
+
+    def __str__(self):
+        return "need a halfwidth katakana character\
+which can be used as voiced or semi-voiced: {}".format(self.sent)
+
+
 class Chartype(object):
     u'''
     Chartype クラス
@@ -339,11 +349,46 @@ class Chartype(object):
 
     def half2full(self, char):
         u"""半角カタカナ char を全角カタカナに変換する"""
-        if not self.is_halfwidthkatakana(char):
+        # voiced and semi-voiced sound mark
+        voiced = {
+            "ｶ": "ガ", "ｷ": "ギ", "ｸ": "グ", "ｹ": "ゲ", "ｺ": "ゴ",
+            "ｻ": "ザ", "ｼ": "ジ", "ｽ": "ズ", "ｾ": "ゼ", "ｿ": "ゾ",
+            "ﾀ": "ダ", "ﾁ": "ヂ", "ﾂ": "ヅ", "ﾃ": "デ", "ﾄ": "ド",
+            "ﾊ": "バ", "ﾋ": "ビ", "ﾌ": "ブ", "ﾍ": "ベ", "ﾎ": "ボ",
+        }
+        semivoiced = {
+            "ﾊ": "パ", "ﾋ": "ピ", "ﾌ": "プ", "ﾍ": "ペ", "ﾎ": "ポ",
+        }
+        w0_name = unicodedata.name(char[0])
+
+        # char[0] は halfwidthkatakana でなければならない
+        # 「ﾞ」や「ﾟ」は is_halfwidthkatakana チェックで
+        # 通るので別でチェックしている
+        if (not self.is_halfwidthkatakana(char[0])) or \
+                (w0_name in [
+                    'HALFWIDTH KATAKANA VOICED SOUND MARK',
+                    'HALFWIDTH KATAKANA SEMI-VOICED SOUND MARK']):
             raise CharTypeException(char)
 
-        name = re.sub(r"^HALFWIDTH\s", "", unicodedata.name(char))
-        return unicodedata.lookup(name)
+        if len(char) == 1:
+            name = re.sub(r"^HALFWIDTH\s", "", unicodedata.name(char))
+            return unicodedata.lookup(name)
+        elif len(char) >= 2:
+            w1_name = unicodedata.name(char[1])
+            if w1_name == \
+                    'HALFWIDTH KATAKANA VOICED SOUND MARK':
+                try:
+                    return voiced[char[0]]
+                except KeyError:
+                    raise VoicedTypeException(char[0])
+            elif w1_name == \
+                    'HALFWIDTH KATAKANA SEMI-VOICED SOUND MARK':
+                try:
+                    return semivoiced[char[0]]
+                except KeyError:
+                    raise VoicedTypeException(char[0])
+            else:
+                return self.half2full(char[0])
 
     def full2half(self, char):
         u"""全角カタカナ char を半角カタカナに変換する"""
